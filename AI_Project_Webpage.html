@@ -1,0 +1,168 @@
+<!DOCTYPE HTML>
+<!--
+	Story by HTML5 UP
+	html5up.net | @ajlkn
+	Free for personal and commercial use under the CCA 3.0 license (html5up.net/license)
+-->
+<html>
+<head>
+	<title>Building RAG with llamaindex</title>
+	<meta charset="utf-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
+	<link rel="stylesheet" href="assets/css/main.css" />
+	<noscript><link rel="stylesheet" href="assets/css/noscript.css" /></noscript>
+	<style>
+        body {
+            background-color: #f0fff0;
+        }
+	</style>
+</head>
+	<body class="is-preload">
+
+		<!-- Wrapper -->
+		<div id="wrapper" class="divided">
+
+			<!-- One -->
+			<section class="banner style1 orient-left content-align-left image-position-right fullscreen onload-image-fade-in onload-content-fade-right">
+				<div class="content">
+					<h1>Building RAG with llamaindex</h1>
+					<h2>Summary</h2>
+					<p class="major"><b>Objective</b> : Develop an efficient RAG model capable of handling various types of questions about a document or set of documents. The model should be able to: 1) Retrieve relevant document sections when given context-specific queries. 2) Generate summarized information for broader questions.</p>
+					<p class="major">
+						<b>Requirement</b><ol style="list-style-type: circle;">
+							<li>API Key for OpenAI language model</li>
+							<li>Document to be tested</li>
+							<li>Python Libraries : llamaindex, langchain, nest_asyncio</li>
+							<li>Decision Tree</li>
+							<li>Random Forest</li>
+						</ol>
+					</p>
+					<p class="major">
+						<b>Techniques Used</b>: <ol style="list-style-type: circle;">
+							<li><b>Semantic Splitting</b> : By using SemanticSplitterNodeParser, document can be split based on semantic thresholds and embedding models into finer-grained document nodes.</li>
+							<li><b>Vector and Summary Indexing</b>: Used to support two main querying capabilities: 1) Vector Index: It enables retrieval based on semantic similarity using embeddings. 2) Summary Index: It summarizes the document content for broad or overview questions.</li>
+							<li><b>Routing and Query Tools</b>: 1) LLMSingleSelector: This selects the appropriate query engine tool (summary or vector) depending on the question type. 2) RouterQueryEngine: Router routes queries to the correct query engine based on their nature (summary vs. context-specific).</li>
+						</ol>
+					</p>
+					<p class="major">
+						<b>Queries</b>: <ol style="list-style-type: circle;">
+							<li><b>SIMPLE (LOGICAL QUESTIONS)</b> : 
+								<ol style="list-style-type: circle;">
+									<li>Q1. "Where does Hogwards situated?"</li>
+									<li>Q2. "In which year, is this published"?</li>
+									<li>Q1.1 "What does Harry see in the Mirror of Erised?"</li>
+							</li>
+							<li><b>COMPLEX Questions (that are WITHIN THE DOC)</b>: 
+								<ol style="list-style-type: circle;">
+									<li>Q3. "Why doesn’t Professor Snape like Harry?"</li>
+									<li>Q4. "What happened in the game of chess ? Who are the players playing ? What is the end result? How ?"</li>
+							</li>
+							<li><b>COMPLEX (that are OUTSIDE THE DOC)</b>:
+								<ol style="list-style-type: circle;">
+									<li>Q5. "Who is Hermione's life partner? How do you know about that?"</li>
+									<li>Q6. "What will happen in the next part?"</li>
+
+							</li>
+						</ol>
+					</p>
+					<p class="major">
+						<b>Responses</b>: <ol style="list-style-type: circle;">
+	<li>
+		Ans1 : Selecting query engine 1: The question is asking for a specific location, which is related to retrieving specific context from the document..
+		Diagon Alley
+	</li>
+	<li>
+		Ans2: Selecting query engine 1: The question is asking for a specific detail (year of publication) from the document, which falls under retrieving specific context..
+		The book is published in 2014.
+	</li>
+	<li>
+		Ans1.1: Selecting query engine 1: The question is asking for specific context from the document, which in this case would be the description of what Harry sees in the Mirror of Erised..
+		Harry sees his family standing around him in the Mirror of Erised.
+	</li>
+	<li>Ans3:
+		Selecting query engine 1: This choice is more relevant as it focuses on retrieving specific context from the document, which would likely provide information on why Professor Snape doesn't like Harry..
+		Professor Snape doesn't like Harry because he actually hates him.
+	</li>
+	<li>Ans4:
+		Selecting query engine 0: The question is asking for a summarization of the events in the game of chess, including the players and the end result..
+		In the game of chess, Harry, Ron, and Hermione played a life-sized game to reach the Sorcerer's Stone. Ron was a knight, Hermione was a castle, and Harry was a bishop. The end result was that Ron sacrificed himself by allowing the opposing queen to take him, which ultimately led to Harry putting the opposing king in checkmate, winning the game. This strategic move allowed them to successfully advance to the next challenge in their quest.
+	</li>
+	<li>
+		Selecting query engine 1: Useful for retrieving specific context from the document..
+		Ron is Hermione's life partner. This can be inferred from the context where it mentions Hermione playing chess with Ron and how Ron reacts when Harry sits down next to him.
+	</li>
+	<li>ans6:
+		Selecting query engine 1: The question is asking about specific context in the next part of the document, which aligns with choice 2..
+		In the next part, Harry will continue to experience whispers and stares from people as he moves around the school, likely due to the scar on his face that is drawing attention.
+	</li>
+</ol>
+					</p>
+
+					<p class="major">
+						<b>Steps Followed:</b><ol style="list-style-type: decimal;">
+							<li><b>Environment Setup</b> -  We imported necessary libraries and configure the OpenAI API key</li>
+							<li><b>Model and Embedding Setup</b> - <i>"text-embedding-ada-002"</i> is used as Embedding Model and <i>"gpt-3.5-turbo-0125"</i> is used for LLM</li>
+							<li>
+								<b>Document Loading</b> - Document has been loaded from specified file paths using SimpleDirectoryReader
+							</li>
+							<li><b>Node Parsing</b> - Parsed the loaded documents into semantic nodes with SemanticSplitterNodeParser, defining thresholds for creating semantically coherent nodes.</li>
+							<li><b>Index Creation</b> - Created SummaryIndex and VectorStoreIndex using the parsed nodes to facilitate summarization and retrieval, respectively.</li>
+							<li>
+								<b>Query Engine Tool Creation</b> - Set up QueryEngineTool for each index (summary and vector) to define response modes
+							</li>
+							<li><b>Router Configuration</b> - RouterQueryEngine has been configured with LLMSingleSelector to direct queries to either the summary tool or vector tool as per query requirements. </li>
+						</ol>
+					</p>
+					<p class="major"><b>Final Result</b> : A flexible dual purpose query engine is created that is capable of handling both the summarization and context-based retrieval tasks.</p>
+					<p class="major">
+						<b>Next Steps</b>: <ol style="list-style-type: circle;">
+							<li>Further testing can be done to further evaluate the performance of the model on different parameters</li>
+							<li>Model Performance can be compared by using different embedded models and LLM models to create different models</li>
+						</ol>
+					</p>
+					<ul class="actions stacked">
+						<li><a href="https://github.com/ShivamDhawan330/Agentic_RAG_LlamaIndex" target="_blank" class="button big wide smooth-scroll-middle">GitHub Code</a></li>
+					</ul>
+					<style>
+						.image-container {
+							width: 1341px;
+							height: 511px;
+							overflow: hidden;
+						}
+
+							.image-container img {
+								width: 100%;
+								height: auto;
+								object-fit: cover;
+							}
+					</style>
+				</div>
+			</section>
+		</div>
+		<div class="image-container">
+			<img src="images/Model_Results.png" alt="Evaluation Results" />
+		</div>
+
+		<!-- Footer -->
+		<footer class="wrapper style1 align-center">
+			<div class="inner">
+				<ul class="icons">
+					<li><a href="https://www.youtube.com/channel/UCeNV_T7ckOQ8aTmfrSmOfpw" target="_blank" class="icon brands fa-youtube"><span class="label">youtube</span></a></li>
+					<li><a href="https://github.com/ShivamDhawan330" target="_blank" class="icon brands fa-github"><span class="label">Github</span></a></li>
+					<li><a href="https://www.linkedin.com/in/shivam-dhawan-b1b83b178/" target="_blank" class="icon brands fa-linkedin"><span class="label">linkedin</span></a></li>
+					<li><a href="mailto:shivam.dhawan330@gmail.com" target="_blank" class="icon solid fa-envelope"><span class="label">Email</span></a></li>
+				</ul>
+			</div>
+		</footer>
+
+		<!-- Scripts -->
+		<script src="assets/js/jquery.min.js"></script>
+		<script src="assets/js/jquery.scrollex.min.js"></script>
+		<script src="assets/js/jquery.scrolly.min.js"></script>
+		<script src="assets/js/browser.min.js"></script>
+		<script src="assets/js/breakpoints.min.js"></script>
+		<script src="assets/js/util.js"></script>
+		<script src="assets/js/main.js"></script>
+
+	</body>
+</html>
